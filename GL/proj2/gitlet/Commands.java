@@ -16,19 +16,7 @@ import static gitlet.Helpers.*;
  */
 public class Commands {
 
-    static boolean repoExists = checkInit();
-    static int len = 0;
-
     public static void init() {
-
-        if (repoExists) {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
-            return;
-        }
-        if (len > 1) {
-            System.out.println("Incorrect operands.");
-            return;
-        }
 
 //        Initializes a new gitlet repository, including the initial commit.
 
@@ -75,16 +63,6 @@ public class Commands {
     }
 
     public static void add(String filename) {
-
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 2) {
-            System.out.println("Incorrect operands.");
-            return;
-        }
-
         File filePath = join(CWD, filename);
 
         //if provided filename isn't within CWD, return error.
@@ -121,19 +99,6 @@ public class Commands {
     public static void commit(String message) {
         //create new commit object with files in staging area.
         //update the head pointer to new commit object.
-
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len == 1) {
-            System.out.println("Please enter a commit message.");
-            return;
-        }
-        if (len > 2) {
-            System.out.println("Incorrect operands.");
-            return;
-        }
 
         if (message.trim().equals("")) {
             System.out.println("Please enter a commit message.");
@@ -182,8 +147,11 @@ public class Commands {
         allFiles.addAll(currBranchCom.files.keySet());
 
         for (String filename : allFiles.stream().toList()) {
-            if (newBranchCom.files.containsKey(filename) && !currBranchCom.files.containsKey(filename)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            if (newBranchCom.files.containsKey(filename)
+                    && !currBranchCom.files.containsKey(filename)) {
+                System.out.println(
+                        "There is an untracked file in the way; delete it," +
+                                " or add and commit it first.");
                 return;
             }
         }
@@ -191,7 +159,8 @@ public class Commands {
         for (String filename : allFiles.stream().toList()) {
             File x = join(CWD, filename);
             x.delete();
-            if (currBranchCom.files.containsKey(filename) && !newBranchCom.files.containsKey(filename)) {
+            if (currBranchCom.files.containsKey(filename)
+                    && !newBranchCom.files.containsKey(filename)) {
                 return;
             }
 
@@ -276,14 +245,6 @@ public class Commands {
     }
 
     public static void log() {
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 1) {
-            System.out.println("Incorrect operands.");
-            return;
-        }
 
         String head = getHead();
         Commit x = readObject(join(COMMIT, head), Commit.class);
@@ -313,7 +274,9 @@ public class Commands {
         Staging staging = readObject(ADDFILE, Staging.class);
         HashMap<String, String> commit = readObject(join(COMMIT, getHead()), Commit.class).files;
 
-        if ((!staging.filenames.containsKey(filename)) && (!staging.removals.contains(filename)) && (!commit.containsKey(filename))) {
+        if ((!staging.filenames.containsKey(filename))
+                && (!staging.removals.contains(filename))
+                && (!commit.containsKey(filename))) {
             System.out.println("No reason to remove the file.");
             return;
         }
@@ -330,13 +293,6 @@ public class Commands {
     }
 
     public static void globalLog() {
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 1) {
-            System.out.println("Incorrect operands.");
-        }
         List<String> commits = plainFilenamesIn(COMMIT);
 
         assert commits != null;
@@ -376,13 +332,6 @@ public class Commands {
     }
 
     public static void status() {
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 1) {
-            System.out.println("Incorrect operands.");
-        }
         System.out.println("=== Branches ===");
         Staging x = readObject(BRANCH, Staging.class);
 
@@ -409,13 +358,6 @@ public class Commands {
     }
 
     public static void branch(String branchName) {
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 2) {
-            System.out.println("Incorrect operands.");
-        }
         Staging x = readObject(BRANCH, Staging.class);
 
         if (x.filenames.containsKey(branchName)) {
@@ -426,14 +368,6 @@ public class Commands {
     }
 
     public static void rmBranch(String branchName) {
-
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 2) {
-            System.out.println("Incorrect operands.");
-        }
         Staging x = readObject(BRANCH, Staging.class);
         if (!x.filenames.containsKey(branchName)) {
             System.out.println("A branch with that name does not exist.");
@@ -449,13 +383,6 @@ public class Commands {
     }
 
     public static void reset(String commitId) {
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 2) {
-            System.out.println("Incorrect operands.");
-        }
         File filepath = join(COMMIT, commitId);
 
         if (!filepath.exists()) {
@@ -464,6 +391,14 @@ public class Commands {
 
         Commit x = readObject(filepath, Commit.class);
 
+//        for (String file : x.files.keySet().stream().toList()) {
+//            if (!readObject(join(COMMIT,getHead()), Commit.class).files.containsKey(file)) {
+//                System.out.println(
+//                        "There is an untracked file in the way;" +
+//                                " delete it, or add and commit it first.");
+//                return;
+//            }
+//        }
         for (String file : x.files.keySet().stream().toList()) {
             File y = join(CWD, file);
             y.delete();
@@ -480,12 +415,6 @@ public class Commands {
     }
 
     public static void merge(String branchName) {
-        if (!repoExists) {
-            System.out.println("Not in an initialized Gitlet directory.");
-            return;
-        }
-        if (len > 2) {
-            System.out.println("Incorrect operands.");
-        }
+
     }
 }

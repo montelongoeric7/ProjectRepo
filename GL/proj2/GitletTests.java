@@ -275,7 +275,6 @@ public class GitletTests {
      */
     public static void writeFile(Path src, String dst) {
         try {
-            OG_OUT.println("Copy source file " + src + " to testing file " + dst);
             Files.copy(src, Path.of(dst), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -289,7 +288,6 @@ public class GitletTests {
      */
     public static void deleteFile(String path) {
         try {
-            OG_OUT.println("Delete file " + path);
             Files.delete(Path.of(path));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -302,7 +300,6 @@ public class GitletTests {
      * @param path
      */
     public static void assertFileExists(String path) {
-        OG_OUT.println("Check that file or directory " + path + " exists");
         if (!Files.exists(Path.of(path))) {
             fail("Expected file " + path + " to exist; does not.");
         }
@@ -314,7 +311,6 @@ public class GitletTests {
      * @param path
      */
     public static void assertFileDoesNotExist(String path) {
-        OG_OUT.println("Check that file " + path + " does NOT exist");
         if (Files.exists(Path.of(path))) {
             fail("Expected file " + path + " to not exist; does.");
         }
@@ -328,10 +324,7 @@ public class GitletTests {
      * @param pathActual -- filename in current testing directory to check
      */
     public static void assertFileEquals(Path src, String pathActual) {
-        OG_OUT.println("Check that source file " + src + " is identical to testing file " + pathActual);
-        if (!Files.exists(Path.of(pathActual))) {
-            fail("Expected file " + pathActual + " to exist; does not.");
-        }
+        assertFileExists(pathActual);
         try {
             String expected = Files.readString(src).replace("\r\n", "\n");
             String actual = Files.readString(Path.of(pathActual)).replace("\r\n", "\n");
@@ -933,34 +926,7 @@ public class GitletTests {
     }
 
     @Test
-    public void test30_branches() {
-        i_prelude1();
-        gitletCommand(new String[]{"branch", "other"}, "");
-        writeFile(WUG, "f.txt");
-        writeFile(NOTWUG, "g.txt");
-        gitletCommand(new String[]{"add", "g.txt"}, "");
-        gitletCommand(new String[]{"add", "f.txt"}, "");
-        gitletCommand(new String[]{"commit", "Main two files"}, "");
-        assertFileExists("f.txt");
-        assertFileExists("g.txt");
-        gitletCommand(new String[]{"checkout", "other"}, "");
-        assertFileDoesNotExist("f.txt");
-        assertFileDoesNotExist("g.txt");
-        writeFile(NOTWUG, "f.txt");
-        gitletCommand(new String[]{"add", "f.txt"}, "");
-        gitletCommand(new String[]{"commit", "Alternative file"}, "");
-        assertFileEquals(NOTWUG, "f.txt");
-        assertFileDoesNotExist("g.txt");
-        gitletCommand(new String[]{"checkout", "main"}, "");
-        assertFileEquals(WUG, "f.txt");
-        assertFileEquals(NOTWUG, "g.txt");
-        gitletCommand(new String[]{"checkout", "other"}, "");
-        assertFileEquals(NOTWUG, "f.txt");
-        assertFileDoesNotExist("g.txt");
-    }
-
-    @Test
-    public void test30a_rmBranch() {
+    public void test30_duplicateBranchErr() {
         i_prelude1();
         gitletCommand(new String[]{"branch", "other"}, "");
         writeFile(WUG, "f.txt");
@@ -982,7 +948,7 @@ public class GitletTests {
         i_prelude1();
         gitletCommand(new String[]{"branch", "other"}, "");
         writeFile(WUG, "f.txt");
-        writeFile(NOTWUG, "g.txt");
+        writeFile(WUG, "g.txt");
         gitletCommand(new String[]{"add", "g.txt"}, "");
         gitletCommand(new String[]{"add", "f.txt"}, "");
         gitletCommand(new String[]{"commit", "Main two files"}, "");
@@ -990,7 +956,7 @@ public class GitletTests {
     }
 
     @Test
-    public void test31a_rmBranchErr() {
+    public void test31_rmBranchErr() {
         i_prelude1();
         gitletCommand(new String[]{"branch", "other"}, "");
         gitletCommand(new String[]{"checkout", "other"}, "");
